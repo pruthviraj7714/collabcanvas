@@ -1,8 +1,9 @@
+import Link from "next/link";
 
-export default function Page() {
+export default function Landing() {
   return (
-    <main>
-      Hi there
+    <main className="bg-sky-300 flex justify-center items-center min-h-screen text-black">
+      <Link href={"/signup"}>Go To Signup</Link>
     </main>
   );
 }
