@@ -6,37 +6,41 @@ export const userMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+) : void => {
   const headers = req.headers.authorization;
 
   if (!headers) {
-    return res.status(401).json({
+     res.status(401).json({
       message: "No Authorization Header Found",
     });
+    return;
   }
 
   const token = headers.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({
+     res.status(401).json({
       message: "Auth Token Not Found!",
     });
+    return;
   }
 
   try {
     const isVerified = verify(token, JWT_SECRET ?? "") as JwtPayload;
 
     if (!isVerified || !isVerified.userId) {
-      return res.status(403).json({
+       res.status(403).json({
         message: "Unauthorized User",
       });
+      return;
     }
 
     req.userId = isVerified.userId;
     next();
   } catch (error) {
-    return res.status(403).json({
+     res.status(403).json({
       message: "Invalid or Expired Token",
     });
+    return;
   }
 };

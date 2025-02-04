@@ -9,3 +9,7 @@ export const signInSchema = z.object({
     username : z.string(),
     password : z.string(),
 })
+
+export const createRoomSchema = z.object({
+    slug : z.string().min(2, {message : "Room name should be at least of 2 characters"})
+})

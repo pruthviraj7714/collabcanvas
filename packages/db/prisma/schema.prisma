@@ -16,6 +16,38 @@ datasource db {
 model User {
   id       String @id @default(uuid())
   username String @unique
-  email String  @unique
-  password String 
+  email    String @unique
+  password String
+  rooms    Room[]
+}
+
+model Room {
+  id      String  @id @default(uuid())
+  slug    String  @unique
+  adminId String
+  shapes  Shape[]
+  admin   User    @relation(fields: [adminId], references: [id])
+}
+
+model Shape {
+  id        String  @id @default(uuid())
+  type      SHAPE
+  x         Float
+  y         Float
+  width     Float?
+  height    Float?
+  radius    Float?
+  strokeColor String?  // Hex or RGBA color
+  fillColor   String?  // Hex or RGBA color
+
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id])
+}
+
+enum SHAPE {
+  CIRCLE
+  RECTANGLE
+  LINE
+  TRIANGLE
+  TEXT
 }
