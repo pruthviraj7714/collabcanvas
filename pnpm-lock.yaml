@@ -39,9 +39,6 @@ importers:
       '@next/eslint-plugin-next':
         specifier: ^15.1.6
         version: 15.1.6
-      '@repo/common':
-        specifier: workspace:*
-        version: link:../../packages/common
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -103,9 +100,6 @@ importers:
         specifier: ^9.0.2
         version: 9.0.2
     devDependencies:
-      '@repo/common':
-        specifier: workspace:*
-        version: link:../../packages/common
       '@repo/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -115,19 +109,6 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
-
-  packages/common:
-    dependencies:
-      dotenv:
-        specifier: ^16.4.7
-        version: 16.4.7
-    devDependencies:
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      '@types/node':
-        specifier: ^22.12.0
-        version: 22.12.0
 
   packages/db:
     dependencies:

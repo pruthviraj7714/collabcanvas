@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { JwtPayload, verify } from "jsonwebtoken";
-import { JWT_SECRET } from "@repo/common";
+import { JWT_SECRET } from "../config/config";
 
 export const userMiddleware = (
   req: Request,

@@ -3,7 +3,7 @@ import { signInSchema, signUpSchema } from "@repo/schemas";
 import { compare, hash } from "bcryptjs";
 import prisma from "@repo/db/client";
 import { sign } from "jsonwebtoken";
-import  { JWT_SECRET } from "@repo/common";
+import { JWT_SECRET } from "../config/config";
 
 export const userRouter: Router = Router();
 
@@ -106,6 +106,8 @@ userRouter.post(
 
       return;
     } catch (error) {
+      console.log(error);
+      
       res.status(500).json({
         message: "Internal Server Error",
       });
