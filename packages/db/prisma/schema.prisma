@@ -37,6 +37,8 @@ model Shape {
   width     Float?
   height    Float?
   radius    Float?
+  endx      Float?
+  endy      Float?
   strokeColor String?  // Hex or RGBA color
   fillColor   String?  // Hex or RGBA color
 

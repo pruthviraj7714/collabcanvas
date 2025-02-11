@@ -22,7 +22,7 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
+    <div className="flex justify-center items-center bg-slate-600 min-h-screen">
       <form onSubmit={onSubmit} className="flex flex-col gap-2">
         <input type="text" name="email" placeholder="Enter email" className="border p-2 text-black" />
         <input type="text" name="username" placeholder="Enter username" className="border p-2 text-black" />

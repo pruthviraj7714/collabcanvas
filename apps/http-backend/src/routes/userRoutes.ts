@@ -102,6 +102,7 @@ userRouter.post(
       res.status(200).json({
         message: "Login Successfull",
         token,
+        userId : user.id
       });
 
       return;

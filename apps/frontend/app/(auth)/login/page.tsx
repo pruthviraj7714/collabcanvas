@@ -16,6 +16,7 @@ const LoginPage = () => {
 
       const response = await axios.post(`${BACKEND_URL}/user/login`, data);
       localStorage.setItem("userToken", response.data.token);
+      localStorage.setItem("userId", response.data.userId);
       router.push("/home");
     } catch (error: any) {
       console.error(error);

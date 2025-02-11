@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Shape" ADD COLUMN     "endx" DOUBLE PRECISION,
+ADD COLUMN     "endy" DOUBLE PRECISION;

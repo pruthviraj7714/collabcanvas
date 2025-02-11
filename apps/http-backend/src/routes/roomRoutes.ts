@@ -1,6 +1,6 @@
 import prisma from "@repo/db/client";
-import { createRoomSchema } from "@repo/schemas";
-import { Request, Response, Router } from "express";
+import { createRoomSchema, addShapeSchema } from "@repo/schemas";
+import { Request, response, Response, Router } from "express";
 import { userMiddleware } from "../middlewares/userMiddleware";
 
 export const roomRouter: Router = Router();
@@ -58,6 +58,7 @@ roomRouter.post(
 
 roomRouter.delete(
   "/delete/:roomId",
+  userMiddleware,
   async (req: Request, res: Response): Promise<void> => {
     try {
       if (!req.userId) {
@@ -68,7 +69,7 @@ roomRouter.delete(
       const roomId = req.params.roomId;
 
       const room = await prisma.room.findUnique({
-        where: { id: roomId },
+        where: { id: roomId, adminId : req.userId },
       });
 
       if (!room) {
@@ -137,6 +138,67 @@ roomRouter.get(
     } catch (error) {
       res.status(500).json({
         message: "Internal server error",
+      });
+      return;
+    }
+  }
+);
+
+roomRouter.post(
+  "/add-shape/:roomId",
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const roomId = req.params.roomId;
+
+      if (!roomId) {
+        res.status(400).json({
+          message: "Room Id not found!",
+        });
+        return;
+      }
+
+      const parsedBody = addShapeSchema.safeParse(req.body);
+
+      if (!parsedBody.success) {
+        res.status(400).json({
+          message: "Invalid Inputs",
+          error: parsedBody.error.format(),
+        });
+        return;
+      }
+
+      const { height, width, radius, shape, strokeColor, xcoor, ycoor, endx, endy } =
+        parsedBody.data;
+
+      await prisma.shape.create({
+        data: {
+          roomId,
+          type:
+            shape === "RECT"
+              ? "RECTANGLE"
+              : shape === "CIRCLE"
+                ? "CIRCLE"
+                : "LINE",
+          x: xcoor,
+          y: ycoor,
+          strokeColor: strokeColor,
+          height: height,
+          width: width,
+          radius: radius,
+          endx,
+          endy
+        },
+      });
+
+      res.status(200).json({
+        message : "Shape Successfully Added on Canvas"
+      })
+      return;
+    } catch (error) {
+      console.log(error);
+      
+      res.status(500).json({
+        message: "Internal Server Error",
       });
       return;
     }
