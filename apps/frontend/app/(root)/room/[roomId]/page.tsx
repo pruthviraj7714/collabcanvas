@@ -11,7 +11,7 @@ export default async function RoomPage({
 
   return (
     <div>
-      <CanvasPage roomId={roomId} shapes={shapes}/>
+      <CanvasPage roomId={roomId} intialShapes={shapes}/>
     </div>
   );
 }

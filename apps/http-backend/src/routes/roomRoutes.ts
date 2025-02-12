@@ -167,20 +167,20 @@ roomRouter.post(
         return;
       }
 
-      const { height, width, radius, shape, strokeColor, xcoor, ycoor, endx, endy } =
+      const { height, width, radius, type, strokeColor, x, y, endx, endy } =
         parsedBody.data;
 
       await prisma.shape.create({
         data: {
           roomId,
           type:
-            shape === "RECT"
+            type === "RECTANGLE"
               ? "RECTANGLE"
-              : shape === "CIRCLE"
+              : type === "CIRCLE"
                 ? "CIRCLE"
                 : "LINE",
-          x: xcoor,
-          y: ycoor,
+          x: x,
+          y: y,
           strokeColor: strokeColor,
           height: height,
           width: width,
@@ -204,3 +204,26 @@ roomRouter.post(
     }
   }
 );
+
+roomRouter.delete(
+  "/delete-shape/:roomId/:shapeId",
+  userMiddleware,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      if (!req.userId) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+      }
+
+      const {roomId, shapeId} = req.params;
+
+      await prisma.shape.delete({ where: { id: shapeId, roomId } });
+
+      res.status(200).json({ message: "Shape Successfully Removed" });
+    } catch (error) {
+      console.error("Error deleting shape:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
+);
+

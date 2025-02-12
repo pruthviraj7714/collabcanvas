@@ -15,11 +15,11 @@ export const createRoomSchema = z.object({
 })
 
 export const addShapeSchema = z.object({
-    shape : z.enum(["RECT", "CIRCLE", "LINE"]),
+    type : z.enum(["RECTANGLE", "CIRCLE", "LINE"]),
     width : z.number({message : "width should be number"}),
     height : z.number({message : "height should be number"}),
-    xcoor : z.number(),
-    ycoor : z.number(),
+    x : z.number(),
+    y : z.number(),
     radius : z.number(),
     endx : z.number(),
     endy : z.number(),

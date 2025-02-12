@@ -7,7 +7,7 @@ import {
   RectangleHorizontal,
   Eraser,
 } from "lucide-react";
-import type { IShape, Shape } from "../types/types";
+import type { Shape } from "../types/types";
 import axios from "axios";
 import { BACKEND_URL } from "../config/config";
 
@@ -20,159 +20,290 @@ const COLORS = [
   "#9c27b0",
 ];
 
-const CanvasPage = ({ roomId, shapes }: { roomId: string; shapes: any[] }) => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [selectedShape, setSelectedShape] = useState<Shape>("RECT");
+interface DrawingState {
+  isDrawing: boolean;
+  startX: number;
+  startY: number;
+}
+
+const CanvasPage = ({
+  roomId,
+  intialShapes,
+}: {
+  roomId: string;
+  intialShapes: any[];
+}) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const [selectedShape, setSelectedShape] = useState<Shape>("RECTANGLE");
   const [strokeColor, setStrokeColor] = useState("#ffffff");
+  const [shapes, setShapes] = useState(intialShapes);
+  const drawingState = useRef<DrawingState>({
+    isDrawing: false,
+    startX: 0,
+    startY: 0,
+  });
+  const distanceFromPointToLine = (
+    x: number,
+    y: number,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number
+  ) => {
+    const A = x - x1;
+    const B = y - y1;
+    const C = x2 - x1;
+    const D = y2 - y1;
 
-  async function InsertShapeOnCanvas(shape: any, roomId: string) {
-    try {
-      await axios.post(`${BACKEND_URL}/room/add-shape/${roomId}`, shape);
-    } catch (error: any) {
-      alert(error.message);
+    const dot = A * C + B * D;
+    const lenSq = C * C + D * D;
+    let param = -1;
+
+    if (lenSq !== 0) {
+      param = dot / lenSq;
     }
-  }
-  async function eraseShape(shape : any) {
-    alert("done");
-  }
 
-  function SetShapesonCanvas(
-    canvas: HTMLCanvasElement,
-    ctx: CanvasRenderingContext2D,
-    shapes: IShape[]
-  ) {
-    if (!ctx) return;
-    if (shapes.length < 1) return;
+    let xx, yy;
 
-    for (let i = 0; i < shapes.length; i++) {
-      ctx.strokeStyle = shapes[i].strokeColor;
-      if (shapes[i].type === "RECTANGLE") {
-        ctx?.strokeRect(
-          shapes[i].x,
-          shapes[i].y,
-          shapes[i].width,
-          shapes[i].height
-        );
-      } else if (shapes[i].type === "CIRCLE") {
-        ctx.beginPath();
-        ctx.arc(shapes[i].x, shapes[i].y, shapes[i].radius, 0, 2 * Math.PI);
-        ctx.stroke();
-      } else if (shapes[i].type === "LINE") {
-        ctx.beginPath();
-        ctx.moveTo(shapes[i].x, shapes[i].y);
-        ctx.lineTo(shapes[i].endx, shapes[i].endy);
-        ctx.stroke();
-      }
+    if (param < 0) {
+      xx = x1;
+      yy = y1;
+    } else if (param > 1) {
+      xx = x2;
+      yy = y2;
+    } else {
+      xx = x1 + param * C;
+      yy = y1 + param * D;
     }
-  }
 
+    const dx = x - xx;
+    const dy = y - yy;
+
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const isPointNearRectangle = (
+    x: number,
+    y: number,
+    rectX: number,
+    rectY: number,
+    rectWidth: number,
+    rectHeight: number,
+    tolerance: number = 5
+  ) => {
+    // Normalize rectangle coordinates
+    const left = Math.min(rectX, rectX + rectWidth);
+    const right = Math.max(rectX, rectX + rectWidth);
+    const top = Math.min(rectY, rectY + rectHeight);
+    const bottom = Math.max(rectY, rectY + rectHeight);
+
+    // Check if point is near any edge of the rectangle
+    const nearHorizontalEdge =
+      (x >= left - tolerance &&
+        x <= right + tolerance &&
+        (Math.abs(y - top) <= tolerance ||
+          Math.abs(y - bottom) <= tolerance)) ||
+      (y >= top - tolerance &&
+        y <= bottom + tolerance &&
+        (Math.abs(x - left) <= tolerance || Math.abs(x - right) <= tolerance));
+
+    return nearHorizontalEdge;
+  };
+  // Initialize canvas context
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+    if (!canvas) return;
 
-      SetShapesonCanvas(canvas, ctx, shapes);
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-      let startX = 0;
-      let startY = 0;
-      let height = 0;
-      let width = 0;
-      let radius = 0;
-      let isClicked = false;
-      let currShapeData = {
-        shape: "",
-        xcoor: 0,
-        ycoor: 0,
-        radius: 0,
-        height: 0,
-        width: 0,
-        endx: 0,
-        endy: 0,
-        strokeColor: "",
-      };
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-      canvas.onmousedown = (e) => {
-        isClicked = true;
-        startX = e.clientX - canvas.offsetLeft;
-        startY = e.clientY - canvas.offsetTop;
-      };
+    ctxRef.current = ctx;
+    redrawCanvas();
+  }, []);
 
-      canvas.onmousemove = (e) => {
-        if (isClicked) {
-          ctx?.beginPath();
-          ctx.strokeStyle = strokeColor;
-          if (selectedShape === "RECT") {
-            width = e.clientX - canvas.offsetLeft - startX;
-            height = e.clientY - canvas.offsetTop - startY;
-            ctx?.clearRect(0, 0, canvas.width, canvas.height);
-            SetShapesonCanvas(canvas, ctx, shapes);
-            ctx?.strokeRect(startX, startY, width, height);
-          } else if (selectedShape === "CIRCLE") {
-            radius = Math.max(
-              Math.abs(e.clientX - canvas.offsetLeft - startX),
-              Math.abs(e.clientY - canvas.offsetTop - startY)
+  useEffect(() => {
+    redrawCanvas();
+  }, [shapes]);
+
+  const redrawCanvas = () => {
+    const ctx = ctxRef.current;
+    const canvas = canvasRef.current;
+    if (!ctx || !canvas) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    shapes.forEach((shape) => {
+      ctx.strokeStyle = shape.strokeColor;
+
+      switch (shape.type) {
+        case "RECTANGLE":
+          ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
+          break;
+        case "CIRCLE":
+          ctx.beginPath();
+          ctx.arc(shape.x, shape.y, shape.radius, 0, 2 * Math.PI);
+          ctx.stroke();
+          break;
+        case "LINE":
+          ctx.beginPath();
+          ctx.moveTo(shape.x, shape.y);
+          ctx.lineTo(shape.endx, shape.endy);
+          ctx.stroke();
+          break;
+      }
+    });
+  };
+
+  const getMouseCoordinates = (e: MouseEvent) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const { x, y } = getMouseCoordinates(e as unknown as MouseEvent);
+    drawingState.current = {
+      isDrawing: true,
+      startX: x,
+      startY: y,
+    };
+  };
+
+  const handleMouseMove = async (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!drawingState.current.isDrawing) return;
+
+    const ctx = ctxRef.current;
+    const canvas = canvasRef.current;
+    if (!ctx || !canvas) return;
+
+    const { x, y } = getMouseCoordinates(e as unknown as MouseEvent);
+    const { startX, startY } = drawingState.current;
+
+    redrawCanvas();
+
+    ctx.strokeStyle = strokeColor;
+
+    switch (selectedShape) {
+      case "RECTANGLE": {
+        const width = x - startX;
+        const height = y - startY;
+        ctx.strokeRect(startX, startY, width, height);
+        break;
+      }
+      case "CIRCLE": {
+        const radius = Math.sqrt(
+          Math.pow(x - startX, 2) + Math.pow(y - startY, 2)
+        );
+        ctx.beginPath();
+        ctx.arc(startX, startY, radius, 0, 2 * Math.PI);
+        ctx.stroke();
+        break;
+      }
+      case "LINE": {
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        break;
+      }
+      case "ERASER": {
+        const newShapes = shapes.filter((shape) => {
+          if (shape.type === "RECTANGLE") {
+            return !isPointNearRectangle(
+              x,
+              y,
+              shape.x,
+              shape.y,
+              shape.width,
+              shape.height
             );
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            SetShapesonCanvas(canvas, ctx, shapes);
-            ctx.beginPath()
-            ctx.arc(startX, startY, radius, 0, 2 * Math.PI);
-            ctx.stroke();
-          } else if (selectedShape === "LINE") {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            SetShapesonCanvas(canvas, ctx, shapes);
-            ctx.beginPath()
-            ctx.moveTo(startX, startY);
-            ctx.lineTo(
-              e.clientX - canvas.offsetLeft,
-              e.clientY - canvas.offsetTop
+          } else if (shape.type === "LINE") {
+            const distance = distanceFromPointToLine(
+              x,
+              y,
+              shape.x,
+              shape.y,
+              shape.endx,
+              shape.endy
             );
-            ctx.stroke();
-          } else if (selectedShape === "ERASER") {
-            for (let i = 0; i < shapes.length; i++) {
-              if (shapes[i].x === e.clientX && shapes[i].y === e.clientY) {
-                eraseShape(shapes[i]);
-                shapes = shapes.filter((s) => s.id === shapes[i].id);
+            return distance > 5;
+          } else if (shape.type === "CIRCLE") {
+            return !(
+              Math.sqrt(Math.pow(x - shape.x, 2) + Math.pow(y - shape.y, 2)) <=
+              shape.radius
+            );
+          }
+          return true;
+        });
+
+        if (newShapes.length !== shapes.length) {
+          // Find the removed shape by comparing the arrays
+          const removedShapes = shapes.filter(
+            (shape) => !newShapes.includes(shape)
+          );
+
+          if (removedShapes.length > 0) {
+            setShapes(newShapes);
+
+            try {
+              for (const shape of removedShapes) {
+                await axios.delete(
+                  `${BACKEND_URL}/room/delete-shape/${roomId}/${shape.id}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+                    },
+                  }
+                );
               }
+            } catch (error) {
+              console.error("Failed to delete shape:", error);
             }
           }
         }
+        break;
+      }
+    }
+  };
+
+  const handleMouseUp = async (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!drawingState.current.isDrawing) return;
+
+    const { x, y } = getMouseCoordinates(e as unknown as MouseEvent);
+    const { startX, startY } = drawingState.current;
+
+    if (selectedShape !== "ERASER") {
+      const newShape = {
+        type: selectedShape,
+        x: startX,
+        y: startY,
+        strokeColor,
+        width: x - startX,
+        height: y - startY,
+        radius: Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2)),
+        endx: x,
+        endy: y,
       };
 
-      canvas.onmouseup = async (e) => {
-        isClicked = false;
-        if(selectedShape !== "ERASER") {
-          currShapeData = {
-            ...currShapeData,
-            shape: selectedShape,
-            height: height,
-            width: width,
-            endx: e.clientX - canvas.offsetLeft,
-            endy: e.clientY - canvas.offsetTop,
-            radius: radius,
-            xcoor: startX,
-            ycoor: startY,
-            strokeColor: strokeColor,
-          };
-          await InsertShapeOnCanvas(currShapeData, roomId);
-          shapes = [
-            ...shapes,
-            {
-              x: startX,
-              y: startY,
-              height: height,
-              width: width,
-              endx: e.clientX - canvas.offsetLeft,
-              endy: e.clientY - canvas.offsetTop,
-              strokeColor: strokeColor,
-              type: selectedShape,
-              radius: radius,
-            },
-          ];
-        }
-      };
+      try {
+        await axios.post(`${BACKEND_URL}/room/add-shape/${roomId}`, newShape);
+        setShapes((prev) => [...prev, newShape]);
+      } catch (error) {
+        console.error("Failed to save shape:", error);
+      }
     }
-  }, [canvasRef, strokeColor, selectedShape, shapes, roomId]);
+
+    drawingState.current.isDrawing = false;
+  };
 
   return (
     <div className="relative bg-[#121212] min-h-screen">
@@ -180,8 +311,8 @@ const CanvasPage = ({ roomId, shapes }: { roomId: string; shapes: any[] }) => {
         <div className="flex justify-center items-center gap-2 p-2 bg-[#1e1e1e] rounded-lg shadow-lg">
           <ToolButton
             icon={<RectangleHorizontal />}
-            isSelected={selectedShape === "RECT"}
-            onClick={() => setSelectedShape("RECT")}
+            isSelected={selectedShape === "RECTANGLE"}
+            onClick={() => setSelectedShape("RECTANGLE")}
           />
           <ToolButton
             icon={<Circle />}
@@ -215,8 +346,10 @@ const CanvasPage = ({ roomId, shapes }: { roomId: string; shapes: any[] }) => {
       </div>
       <canvas
         ref={canvasRef}
-        height={window.innerHeight}
-        width={window.innerWidth}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
         className="bg-[#121212]"
       />
     </div>
@@ -229,14 +362,12 @@ interface ToolButtonProps {
   onClick: () => void;
 }
 
-const ToolButton: React.FC<ToolButtonProps> = ({
-  icon,
-  isSelected,
-  onClick,
-}) => (
+const ToolButton = ({ icon, isSelected, onClick }: ToolButtonProps) => (
   <button
     onClick={onClick}
-    className={`p-2 rounded-md transition-colors ${isSelected ? "bg-[#3a3a3a]" : "hover:bg-[#2a2a2a]"}`}
+    className={`p-2 rounded-md transition-colors ${
+      isSelected ? "bg-[#3a3a3a]" : "hover:bg-[#2a2a2a]"
+    }`}
   >
     {icon}
   </button>
@@ -248,11 +379,7 @@ interface ColorButtonProps {
   onClick: () => void;
 }
 
-const ColorButton: React.FC<ColorButtonProps> = ({
-  color,
-  isSelected,
-  onClick,
-}) => (
+const ColorButton = ({ color, isSelected, onClick }: ColorButtonProps) => (
   <button
     onClick={onClick}
     className={`w-8 h-8 rounded-full flex items-center justify-center transition-transform ${

@@ -1,6 +1,6 @@
 
 
-export type Shape = "RECT" | "CIRCLE" | "LINE"
+export type Shape = "RECTANGLE" | "CIRCLE" | "LINE" | "ERASER"
 
 export interface IShape {
     type: "RECTANGLE" | "CIRCLE" | "LINE";
