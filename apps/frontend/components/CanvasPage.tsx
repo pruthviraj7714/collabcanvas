@@ -8,8 +8,6 @@ import {
   Eraser,
 } from "lucide-react";
 import type { Shape } from "../types/types";
-import axios from "axios";
-import { BACKEND_URL } from "../config/config";
 
 const COLORS = [
   "#f44336",
@@ -37,6 +35,7 @@ const CanvasPage = ({
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const [selectedShape, setSelectedShape] = useState<Shape>("RECTANGLE");
   const [strokeColor, setStrokeColor] = useState("#ffffff");
+  const [socket, setSocket] = useState<WebSocket | null>(null);
   const [shapes, setShapes] = useState(intialShapes);
   const drawingState = useRef<DrawingState>({
     isDrawing: false,
@@ -92,13 +91,11 @@ const CanvasPage = ({
     rectHeight: number,
     tolerance: number = 5
   ) => {
-    // Normalize rectangle coordinates
     const left = Math.min(rectX, rectX + rectWidth);
     const right = Math.max(rectX, rectX + rectWidth);
     const top = Math.min(rectY, rectY + rectHeight);
     const bottom = Math.max(rectY, rectY + rectHeight);
 
-    // Check if point is near any edge of the rectangle
     const nearHorizontalEdge =
       (x >= left - tolerance &&
         x <= right + tolerance &&
@@ -110,8 +107,65 @@ const CanvasPage = ({
 
     return nearHorizontalEdge;
   };
-  // Initialize canvas context
+
   useEffect(() => {
+    const ws = new WebSocket(
+      `ws://localhost:8080?token=${localStorage.getItem("userToken")}`
+    );
+
+    ws.onopen = () => {
+      ws.send(
+        JSON.stringify({
+          type: "JOIN_ROOM",
+          roomId,
+        })
+      );
+    };
+
+    ws.onmessage = (e) => {
+      const payload = JSON.parse(e.data);
+      console.log(payload);
+
+      if (payload.type === "SHAPE_ADDED") {
+        setShapes((prev) => [...prev, payload.shape]);
+      } else if (payload.type === "SHAPE_ERASED") {
+        setShapes((prev) =>
+          prev.filter((shape) => shape.id !== payload.shapeId)
+        );
+      };
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+
+    setSocket(ws);
+
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(
+          JSON.stringify({
+            type: "LEAVE_ROOM",
+            roomId,
+          })
+        );
+        ws.close();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    socket?.send(
+      JSON.stringify({
+        type: "JOIN_ROOM",
+        roomId,
+      })
+    );
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -123,6 +177,15 @@ const CanvasPage = ({
 
     ctxRef.current = ctx;
     redrawCanvas();
+
+    return () => {
+      socket?.send(
+        JSON.stringify({
+          message: "LEAVE_ROOM",
+          roomId,
+        })
+      );
+    };
   }, []);
 
   useEffect(() => {
@@ -246,27 +309,19 @@ const CanvasPage = ({
         });
 
         if (newShapes.length !== shapes.length) {
-          // Find the removed shape by comparing the arrays
           const removedShapes = shapes.filter(
             (shape) => !newShapes.includes(shape)
           );
 
           if (removedShapes.length > 0) {
-            setShapes(newShapes);
-
-            try {
-              for (const shape of removedShapes) {
-                await axios.delete(
-                  `${BACKEND_URL}/room/delete-shape/${roomId}/${shape.id}`,
-                  {
-                    headers: {
-                      Authorization: `Bearer ${localStorage.getItem("userToken")}`,
-                    },
-                  }
-                );
-              }
-            } catch (error) {
-              console.error("Failed to delete shape:", error);
+            for (const shape of removedShapes) {
+              socket?.send(
+                JSON.stringify({
+                  type: "ERASE_SHAPE",
+                  roomId,
+                  shapeId: shape.id,
+                })
+              );
             }
           }
         }
@@ -295,8 +350,15 @@ const CanvasPage = ({
       };
 
       try {
-        await axios.post(`${BACKEND_URL}/room/add-shape/${roomId}`, newShape);
-        setShapes((prev) => [...prev, newShape]);
+        // await axios.post(`${BACKEND_URL}/room/add-shape/${roomId}`, newShape);
+        socket?.send(
+          JSON.stringify({
+            type: "ADD_SHAPE",
+            roomId,
+            shape: newShape,
+          })
+        );
+        // setShapes((prev) => [...prev, newShape]);
       } catch (error) {
         console.error("Failed to save shape:", error);
       }
