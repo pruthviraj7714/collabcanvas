@@ -8,6 +8,8 @@ import {
   Eraser,
 } from "lucide-react";
 import type { Shape } from "../types/types";
+import { ColorButton } from "./ColorButton";
+import { ToolButton } from "./ToolButton";
 
 const COLORS = [
   "#f44336",
@@ -368,9 +370,9 @@ const CanvasPage = ({
   };
 
   return (
-    <div className="relative bg-[#121212] min-h-screen">
+    <div className="relative bg-[#121212] w-full h-[calc(100vh-5rem)] overflow-hidden">
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
-        <div className="flex justify-center items-center gap-2 p-2 bg-[#1e1e1e] rounded-lg shadow-lg">
+        <div className="flex justify-center items-center gap-2 p-2 bg-[#232329] rounded-lg shadow-lg">
           <ToolButton
             icon={<RectangleHorizontal />}
             isSelected={selectedShape === "RECTANGLE"}
@@ -393,7 +395,7 @@ const CanvasPage = ({
           />
         </div>
       </div>
-      <div className="absolute left-4 top-4 bg-[#1e1e1e] rounded-lg shadow-lg p-4 z-10">
+      <div className="absolute left-4 top-4 bg-[#232329] rounded-lg shadow-lg p-4 z-10">
         <h2 className="text-white mb-2 font-semibold">Stroke Color</h2>
         <div className="grid grid-cols-3 gap-2">
           {COLORS.map((color) => (
@@ -412,45 +414,10 @@ const CanvasPage = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        className="bg-[#121212]"
+        className={"bg-[#121212]"}
       />
     </div>
   );
 };
-
-interface ToolButtonProps {
-  icon: React.ReactNode;
-  isSelected: boolean;
-  onClick: () => void;
-}
-
-const ToolButton = ({ icon, isSelected, onClick }: ToolButtonProps) => (
-  <button
-    onClick={onClick}
-    className={`p-2 rounded-md transition-colors ${
-      isSelected ? "bg-[#3a3a3a]" : "hover:bg-[#2a2a2a]"
-    }`}
-  >
-    {icon}
-  </button>
-);
-
-interface ColorButtonProps {
-  color: string;
-  isSelected: boolean;
-  onClick: () => void;
-}
-
-const ColorButton = ({ color, isSelected, onClick }: ColorButtonProps) => (
-  <button
-    onClick={onClick}
-    className={`w-8 h-8 rounded-full flex items-center justify-center transition-transform ${
-      isSelected ? "scale-110 ring-2 ring-white" : ""
-    }`}
-    style={{ backgroundColor: color }}
-  >
-    {isSelected && <Check className="text-black" size={16} />}
-  </button>
-);
 
 export default CanvasPage;

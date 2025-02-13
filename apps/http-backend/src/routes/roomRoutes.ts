@@ -1,6 +1,6 @@
 import prisma from "@repo/db/client";
-import { createRoomSchema, addShapeSchema } from "@repo/schemas";
-import { Request, response, Response, Router } from "express";
+import { createRoomSchema } from "@repo/schemas";
+import { Request, Response, Router } from "express";
 import { userMiddleware } from "../middlewares/userMiddleware";
 
 export const roomRouter: Router = Router();
@@ -144,86 +144,5 @@ roomRouter.get(
   }
 );
 
-roomRouter.post(
-  "/add-shape/:roomId",
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      const roomId = req.params.roomId;
 
-      if (!roomId) {
-        res.status(400).json({
-          message: "Room Id not found!",
-        });
-        return;
-      }
-
-      const parsedBody = addShapeSchema.safeParse(req.body);
-
-      if (!parsedBody.success) {
-        res.status(400).json({
-          message: "Invalid Inputs",
-          error: parsedBody.error.format(),
-        });
-        return;
-      }
-
-      const { height, width, radius, type, strokeColor, x, y, endx, endy } =
-        parsedBody.data;
-
-      await prisma.shape.create({
-        data: {
-          roomId,
-          type:
-            type === "RECTANGLE"
-              ? "RECTANGLE"
-              : type === "CIRCLE"
-                ? "CIRCLE"
-                : "LINE",
-          x: x,
-          y: y,
-          strokeColor: strokeColor,
-          height: height,
-          width: width,
-          radius: radius,
-          endx,
-          endy
-        },
-      });
-
-      res.status(200).json({
-        message : "Shape Successfully Added on Canvas"
-      })
-      return;
-    } catch (error) {
-      console.log(error);
-      
-      res.status(500).json({
-        message: "Internal Server Error",
-      });
-      return;
-    }
-  }
-);
-
-roomRouter.delete(
-  "/delete-shape/:roomId/:shapeId",
-  userMiddleware,
-  async (req: Request, res: Response): Promise<void> => {
-    try {
-      if (!req.userId) {
-        res.status(401).json({ message: "Unauthorized" });
-        return;
-      }
-
-      const {roomId, shapeId} = req.params;
-
-      await prisma.shape.delete({ where: { id: shapeId, roomId } });
-
-      res.status(200).json({ message: "Shape Successfully Removed" });
-    } catch (error) {
-      console.error("Error deleting shape:", error);
-      res.status(500).json({ message: "Internal Server Error" });
-    }
-  }
-);
 
