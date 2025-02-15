@@ -57,9 +57,16 @@ const addShape = async (payload: any, ws: WebSocket) => {
           ? "RECTANGLE"
           : payload.shape.type === "CIRCLE"
             ? "CIRCLE"
-            : "LINE",
+            : payload.shape.type === "TRIANGLE"
+              ? "TRIANGLE"
+              : "LINE",
       x: payload.shape.x,
       y: payload.shape.y,
+      text: payload.shape.text,
+      secondx: payload.shape.secondx,
+      secondy: payload.shape.secondy,
+      thirdx: payload.shape.thirdx,
+      thirdy: payload.shape.thirdy,
       strokeColor: payload.shape.strokeColor,
       height: payload.shape.height,
       width: payload.shape.width,
@@ -93,18 +100,18 @@ const eraseShape = async (payload: any, ws: WebSocket) => {
     await prisma.shape.delete({
       where: {
         id: shapeId,
-        roomId : payload.roomId,
+        roomId: payload.roomId,
       },
     });
-    
   } catch (error) {
-    ws.send(JSON.stringify({
-      message : "some error occured",
-      error
-    }))
+    ws.send(
+      JSON.stringify({
+        message: "some error occured",
+        error,
+      })
+    );
     return;
   }
-
 
   users.map((user) => {
     user.ws.send(

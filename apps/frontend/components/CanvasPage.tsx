@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import {
-  Check,
   Circle,
   PenLine,
   RectangleHorizontal,
   Eraser,
+  Triangle,
 } from "lucide-react";
 import type { Shape } from "../types/types";
 import { ColorButton } from "./ColorButton";
@@ -24,6 +24,15 @@ interface DrawingState {
   isDrawing: boolean;
   startX: number;
   startY: number;
+}
+
+interface ITriangle {
+  x: number;
+  y: number;
+  secondx: number;
+  secondy: number;
+  thirdx: number;
+  thirdy: number;
 }
 
 const CanvasPage = ({
@@ -110,6 +119,32 @@ const CanvasPage = ({
     return nearHorizontalEdge;
   };
 
+  const isPointInsideTriangle = (
+    currX: number,
+    currY: number,
+    triangle: ITriangle
+  ) => {
+    const { x, y, secondx, secondy, thirdx, thirdy } = triangle;
+
+    function area(
+      x1: number,
+      y1: number,
+      x2: number,
+      y2: number,
+      x3: number,
+      y3: number
+    ) {
+      return Math.abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2.0);
+    }
+
+    const A = area(x, y, secondx, secondy, thirdx, thirdy);
+    const A1 = area(currX, currY, secondx, secondy, thirdx, thirdy);
+    const A2 = area(x, y, currX, currY, thirdx, thirdy);
+    const A3 = area(x, y, secondx, secondy, currX, currY);
+
+    return Math.abs(A - (A1 + A2 + A3)) < 1;
+  };
+
   useEffect(() => {
     const ws = new WebSocket(
       `ws://localhost:8080?token=${localStorage.getItem("userToken")}`
@@ -126,15 +161,13 @@ const CanvasPage = ({
 
     ws.onmessage = (e) => {
       const payload = JSON.parse(e.data);
-      console.log(payload);
-
       if (payload.type === "SHAPE_ADDED") {
         setShapes((prev) => [...prev, payload.shape]);
       } else if (payload.type === "SHAPE_ERASED") {
         setShapes((prev) =>
           prev.filter((shape) => shape.id !== payload.shapeId)
         );
-      };
+      }
     };
 
     ws.onerror = (error) => {
@@ -219,6 +252,15 @@ const CanvasPage = ({
           ctx.lineTo(shape.endx, shape.endy);
           ctx.stroke();
           break;
+        case "TRIANGLE":
+          ctx.beginPath();
+          ctx.moveTo(shape.x, shape.y);
+          ctx.lineTo(shape.secondx, shape.secondy);
+          ctx.lineTo(shape.thirdx, shape.thirdy);
+          ctx.closePath();
+          ctx.stroke();
+          break;
+       
       }
     });
   };
@@ -280,6 +322,15 @@ const CanvasPage = ({
         ctx.stroke();
         break;
       }
+      case "TRIANGLE": {
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(x, y);
+        ctx.lineTo(2 * startX - x, y);
+        ctx.closePath();
+        ctx.stroke();
+        break;
+      }
       case "ERASER": {
         const newShapes = shapes.filter((shape) => {
           if (shape.type === "RECTANGLE") {
@@ -306,6 +357,8 @@ const CanvasPage = ({
               Math.sqrt(Math.pow(x - shape.x, 2) + Math.pow(y - shape.y, 2)) <=
               shape.radius
             );
+          } else if (shape.type === "TRIANGLE") {
+            return !isPointInsideTriangle(x, y, shape);
           }
           return true;
         });
@@ -332,6 +385,7 @@ const CanvasPage = ({
     }
   };
 
+
   const handleMouseUp = async (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!drawingState.current.isDrawing) return;
 
@@ -346,6 +400,10 @@ const CanvasPage = ({
         strokeColor,
         width: x - startX,
         height: y - startY,
+        secondx: x,
+        secondy: y,
+        thirdx: 2 * startX - x,
+        thirdy: y,
         radius: Math.sqrt(Math.pow(x - startX, 2) + Math.pow(y - startY, 2)),
         endx: x,
         endy: y,
@@ -389,10 +447,16 @@ const CanvasPage = ({
             onClick={() => setSelectedShape("LINE")}
           />
           <ToolButton
+            icon={<Triangle />}
+            isSelected={selectedShape === "TRIANGLE"}
+            onClick={() => setSelectedShape("TRIANGLE")}
+          />
+          <ToolButton
             icon={<Eraser />}
             isSelected={selectedShape === "ERASER"}
             onClick={() => setSelectedShape("ERASER")}
           />
+          
         </div>
       </div>
       <div className="absolute left-4 top-4 bg-[#232329] rounded-lg shadow-lg p-4 z-10">
@@ -415,6 +479,7 @@ const CanvasPage = ({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         className={"bg-[#121212]"}
+        tabIndex={0}
       />
     </div>
   );

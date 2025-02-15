@@ -30,17 +30,21 @@ model Room {
 }
 
 model Shape {
-  id        String  @id @default(uuid())
-  type      SHAPE
-  x         Float
-  y         Float
-  width     Float?
-  height    Float?
-  radius    Float?
-  endx      Float?
-  endy      Float?
-  strokeColor String?  // Hex or RGBA color
-  fillColor   String?  // Hex or RGBA color
+  id          String  @id @default(uuid())
+  type        SHAPE
+  x           Float
+  y           Float
+  width       Float?
+  height      Float?
+  radius      Float?
+  endx        Float?
+  endy        Float?
+  secondx     Float?
+  secondy     Float?
+  thirdx     Float?
+  thirdy      Float?
+  strokeColor String? // Hex or RGBA color
+  fillColor   String? // Hex or RGBA color
 
   roomId String
   room   Room   @relation(fields: [roomId], references: [id])
@@ -51,5 +55,4 @@ enum SHAPE {
   RECTANGLE
   LINE
   TRIANGLE
-  TEXT
 }
