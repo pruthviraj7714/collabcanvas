@@ -15,9 +15,9 @@
 
 ---
 
-## 🌐 Live Demo
+## 🎬 Live Demo Video
 
-🎨 [CollabCanvas Demo](./demo.mp4)
+[![Watch the Demo](https://img.youtube.com/vi/8JxzVcwhgVQ/0.jpg)](https://youtu.be/8JxzVcwhgVQ)
 
 📸 Screenshots
 ![demo-screenshot](image.png)
