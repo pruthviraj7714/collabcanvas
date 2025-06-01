@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild src/index.ts --platform=node --bundle --outdir=dist",
+    "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "npm run build && npm run start"
+    "dev": "pnpm build && pnpm start"
   },
   "devDependencies": {
     "@repo/db": "workspace:*",
     "@repo/schemas": "workspace:*",
-    "@repo/typescript-config": "workspace:*"
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^5.8.3"
   },
   "keywords": [],
   "author": "",

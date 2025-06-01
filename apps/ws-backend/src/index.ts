@@ -62,7 +62,6 @@ const addShape = async (payload: any, ws: WebSocket) => {
               : "LINE",
       x: payload.shape.x,
       y: payload.shape.y,
-      text: payload.shape.text,
       secondx: payload.shape.secondx,
       secondy: payload.shape.secondy,
       thirdx: payload.shape.thirdx,
