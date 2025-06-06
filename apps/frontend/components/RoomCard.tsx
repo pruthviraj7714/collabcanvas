@@ -1,7 +1,7 @@
 "use client";
 import { Trash2 } from "lucide-react";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { BACKEND_URL } from "../config/config";
 import {
@@ -20,7 +20,15 @@ import { useRouter } from "next/navigation";
 const RoomCard = ({ room }: { room: any }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
   const router = useRouter();
-  const userId = localStorage.getItem("userId");
+  const [userId, setUserId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const id = localStorage.getItem("userId");
+      setUserId(id);
+    }
+  }, []);
+
   const deleteRoom = async () => {
     try {
       const res = await axios.delete(`${BACKEND_URL}/room/delete/${room.id}`, {
