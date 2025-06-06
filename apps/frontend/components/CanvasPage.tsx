@@ -35,6 +35,8 @@ interface ITriangle {
   thirdy: number;
 }
 
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
+
 const CanvasPage = ({
   roomId,
   intialShapes,
@@ -147,7 +149,7 @@ const CanvasPage = ({
 
   useEffect(() => {
     const ws = new WebSocket(
-      `ws://localhost:8080?token=${localStorage.getItem("userToken")}`
+      `${WS_URL}?token=${localStorage.getItem("userToken")}`
     );
 
     ws.onopen = () => {
