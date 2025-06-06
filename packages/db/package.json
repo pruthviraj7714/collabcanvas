@@ -6,7 +6,8 @@
     "./client": "./src/index.ts"
   },
   "scripts": {
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "build": "prisma generate"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*"
