@@ -9,7 +9,7 @@
     "schema": "./prisma/schema.prisma"
   },
   "scripts": {
-     "postinstall": "prisma generate && prisma generate --schema=prisma/schema.prisma --output=node_modules/.prisma/client",
+    "postinstall": "prisma generate --schema=./prisma/schema.prisma",
     "build": "prisma generate --schema=./prisma/schema.prisma"
   },
   "devDependencies": {
