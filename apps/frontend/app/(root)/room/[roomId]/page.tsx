@@ -1,5 +1,3 @@
-"use server";
-
 import { fetchRoomPrevShapes } from "../../../../actions/RoomActions";
 import CanvasPage from "../../../../components/CanvasPage";
 

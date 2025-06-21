@@ -1,5 +1,3 @@
-"use server";
-
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { fetchAllRooms } from "../../../actions/RoomActions";
