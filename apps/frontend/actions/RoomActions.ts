@@ -2,6 +2,7 @@
 import prisma  from "@repo/db/client";
 
 export async function fetchAllRooms() {
+    console.log("✅ fetchAllRooms triggered on server");
     try {
         const rooms = await prisma.room.findMany({});
 
