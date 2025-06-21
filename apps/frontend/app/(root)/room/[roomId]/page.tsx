@@ -1,7 +1,7 @@
+"use server";
+
 import { fetchRoomPrevShapes } from "../../../../actions/RoomActions";
 import CanvasPage from "../../../../components/CanvasPage";
-
-export const dynamic = "force-dynamic";
 
 export default async function RoomPage({
   params,
