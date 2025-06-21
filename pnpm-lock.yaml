@@ -20,6 +20,9 @@ importers:
 
   apps/frontend:
     dependencies:
+      '@prisma/client':
+        specifier: 6.10.1
+        version: 6.10.1(prisma@6.8.2)(typescript@5.7.3)
       '@prisma/nextjs-monorepo-workaround-plugin':
         specifier: ^6.9.0
         version: 6.9.0
@@ -53,6 +56,9 @@ importers:
       next-themes:
         specifier: ^0.4.4
         version: 0.4.6(react-dom@19.1.0)(react@19.1.0)
+      prisma:
+        specifier: ^6.3.0
+        version: 6.8.2(typescript@5.7.3)
       react:
         specifier: ^19.0.0
         version: 19.1.0
@@ -72,9 +78,6 @@ importers:
       '@next/eslint-plugin-next':
         specifier: ^15.1.6
         version: 15.3.3
-      '@repo/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -187,7 +190,7 @@ importers:
         version: 6.3.0(prisma@6.8.2)
       prisma:
         specifier: ^6.3.0
-        version: 6.8.2
+        version: 6.8.2(typescript@5.7.3)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -735,6 +738,23 @@ packages:
     requiresBuild: true
     optional: true
 
+  /@prisma/client@6.10.1(prisma@6.8.2)(typescript@5.7.3):
+    resolution: {integrity: sha512-Re4pMlcUsQsUTAYMK7EJ4Bw2kg3WfZAAlr8GjORJaK4VOP6LxRQUQ1TuLnxcF42XqGkWQ36q5CQF1yVadANQ6w==}
+    engines: {node: '>=18.18'}
+    requiresBuild: true
+    peerDependencies:
+      prisma: '*'
+      typescript: '>=5.1.0'
+    peerDependenciesMeta:
+      prisma:
+        optional: true
+      typescript:
+        optional: true
+    dependencies:
+      prisma: 6.8.2(typescript@5.7.3)
+      typescript: 5.7.3
+    dev: false
+
   /@prisma/client@6.3.0(prisma@6.8.2):
     resolution: {integrity: sha512-BY3Fi28PUSk447Bpv22LhZp4HgNPo7NsEN+EteM1CLDnLjig5863jpW+3c3HHLFmml+nB/eJv1CjSriFZ8z7Cg==}
     engines: {node: '>=18.18'}
@@ -748,7 +768,7 @@ packages:
       typescript:
         optional: true
     dependencies:
-      prisma: 6.8.2
+      prisma: 6.8.2(typescript@5.7.3)
     dev: false
 
   /@prisma/config@6.8.2:
@@ -3468,7 +3488,7 @@ packages:
     hasBin: true
     dev: true
 
-  /prisma@6.8.2:
+  /prisma@6.8.2(typescript@5.7.3):
     resolution: {integrity: sha512-JNricTXQxzDtRS7lCGGOB4g5DJ91eg3nozdubXze3LpcMl1oWwcFddrj++Up3jnRE6X/3gB/xz3V+ecBk/eEGA==}
     engines: {node: '>=18.18'}
     hasBin: true
@@ -3481,6 +3501,7 @@ packages:
     dependencies:
       '@prisma/config': 6.8.2
       '@prisma/engines': 6.8.2
+      typescript: 5.7.3
     dev: false
 
   /prop-types@15.8.1:
@@ -4264,7 +4285,6 @@ packages:
     resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
     engines: {node: '>=14.17'}
     hasBin: true
-    dev: true
 
   /typescript@5.8.3:
     resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
