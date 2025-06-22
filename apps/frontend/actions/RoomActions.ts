@@ -1,6 +1,6 @@
 "use server"
 
-import { prisma } from "lib/db";
+import prisma from "@repo/db/client";
 
 export async function fetchAllRooms() {
     console.log("✅ fetchAllRooms triggered on server");
