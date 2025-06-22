@@ -5,6 +5,12 @@
   "exports": {
     "./client": "./src/index.ts"
   },
+  "scripts": {
+    "postinstall": "prisma generate",
+    "db:generate": "npx prisma generate",
+    "db:migrate": "npx prisma migrate dev --skip-generate",
+    "db:deploy": "npx prisma migrate deploy"
+  },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*"
   },
@@ -15,6 +21,7 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "6.3.0",
+    "@prisma/extension-accelerate": "^2.0.1",
     "prisma": "^6.3.0"
   }
 }
