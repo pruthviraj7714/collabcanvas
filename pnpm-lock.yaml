@@ -23,9 +23,6 @@ importers:
       '@prisma/client':
         specifier: 6.10.1
         version: 6.10.1(prisma@6.8.2)(typescript@5.7.3)
-      '@prisma/nextjs-monorepo-workaround-plugin':
-        specifier: ^6.9.0
-        version: 6.9.0
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.6
         version: 1.1.14(@types/react-dom@19.1.5)(@types/react@19.1.6)(react-dom@19.1.0)(react@19.1.0)
@@ -78,6 +75,9 @@ importers:
       '@next/eslint-plugin-next':
         specifier: ^15.1.6
         version: 15.3.3
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -807,10 +807,6 @@ packages:
     resolution: {integrity: sha512-vXSxyUgX3vm1Q70QwzwkjeYfRryIvKno1SXbIqwSptKwqKzskINnDUcx85oX+ys6ooN2ATGSD0xN2UTfg6Zcow==}
     dependencies:
       '@prisma/debug': 6.8.2
-    dev: false
-
-  /@prisma/nextjs-monorepo-workaround-plugin@6.9.0:
-    resolution: {integrity: sha512-nSuu2piWfe108Z5X1kvYXwY4lVkVAekxevNkIKRLpv2gUPibg5nUiy2NjfSco21pX6t+yzPfhL4nEB0I2Rt8vA==}
     dev: false
 
   /@radix-ui/primitive@1.1.2:
