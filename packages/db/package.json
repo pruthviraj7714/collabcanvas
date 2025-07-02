@@ -6,7 +6,7 @@
     "./client": "./src/index.ts"
   },
   "scripts": {
-    "postinstall": "prisma generate",
+    "postinstall": "pnpm db:generate",
     "db:generate": "npx prisma generate",
     "db:migrate": "npx prisma migrate dev --skip-generate",
     "db:deploy": "npx prisma migrate deploy"
